@@ -1,0 +1,13 @@
+Name,Key1,Group1,Key2,Group2,Key3,Group3,Key4,Group4
+Barn.bmp,L,E1,L,C1,R,E1,R,C1
+Bowls.bmp,R,C1,L,E1,L,C1,R,E1
+Bread.bmp,R,E2,R,C2,L,E2,L,C2
+Cabbage.bmp,L,C2,R,E2,R,C2,L,E2
+CheeseGrommit.bmp,L,E3,L,C3,R,E2,R,C3
+Clock.bmp,R,C3,L,E3,L,C3,R,E3
+Gears.bmp,R,E4,R,C4,L,E4,L,C4
+Racecar.bmp,L,C4,R,E4,R,C4,L,E4
+Snorkel.bmp,S1,NA,S2,NA,S3,NA,S4,NA
+Snowflake.bmp,S2,NA,S3,NA,S4,NA,S1,NA
+SoccerBall.bmp,S3,NA,S4,NA,S1,NA,S2,NA
+Swingset.bmp,S4,NA,S1,NA,S2,NA,S3,NA

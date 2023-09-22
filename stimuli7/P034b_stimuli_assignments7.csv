@@ -1,0 +1,13 @@
+Name,Key1,Group1,Key2,Group2,Key3,Group3,Key4,Group4
+Box.bmp,L,E1,L,C1,R,E1,R,C1
+Combo_meal.bmp,R,C1,L,E1,L,C1,R,E1
+Cowboy_hat.bmp,R,E2,R,C2,L,E2,L,C2
+Goose.bmp,L,C2,R,E2,R,C2,L,E2
+Heart.bmp,L,E3,L,C3,R,E2,R,C3
+Patchwork_cat.bmp,R,C3,L,E3,L,C3,R,E3
+Pig.bmp,R,E4,R,C4,L,E4,L,C4
+Radio.bmp,L,C4,R,E4,R,C4,L,E4
+Stegosaurus.bmp,S1,NA,S2,NA,S3,NA,S4,NA
+Tweetie_bird.bmp,S2,NA,S3,NA,S4,NA,S1,NA
+Vertebrae.bmp,S3,NA,S4,NA,S1,NA,S2,NA
+Walkman.bmp,S4,NA,S1,NA,S2,NA,S3,NA

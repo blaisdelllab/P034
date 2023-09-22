@@ -1,0 +1,13 @@
+Name,Key1,Group1,Key2,Group2,Key3,Group3,Key4,Group4
+Bell.bmp,L,E1,L,C1,R,E1,R,C1
+Colliseum.bmp,R,C1,L,E1,L,C1,R,E1
+Doorknob.bmp,R,E2,R,C2,L,E2,L,C2
+Flag.bmp,L,C2,R,E2,R,C2,L,E2
+Groceries.bmp,L,E3,L,C3,R,E2,R,C3
+Harp.bmp,R,C3,L,E3,L,C3,R,E3
+Juicer.bmp,R,E4,R,C4,L,E4,L,C4
+Leaf.bmp,L,C4,R,E4,R,C4,L,E4
+Octopus.bmp,S1,NA,S2,NA,S3,NA,S4,NA
+Dice.bmp,S2,NA,S3,NA,S4,NA,S1,NA
+Sandwich.bmp,S3,NA,S4,NA,S1,NA,S2,NA
+Windmill.bmp,S4,NA,S1,NA,S2,NA,S3,NA
