@@ -7,6 +7,8 @@
 Created on Mon Jan 9 2023
 @author: cyruskirkman
 
+Last updated: 2023-09-25
+
 This is the main code for Dr. Fang's P034b project studying the role of feedback
 upon response accuracy (and maybe learning acquisition) in a delayed match-to-
 sample task (DMTS). It is an alternative approach to the previous three-button
@@ -209,7 +211,8 @@ class ExperimenterControlPanel(object):
                                "4: Stimulus set 4 (Apple...)",
                                "5: Stimulus set 5 (Bell...)",
                                "6: Stimulus set 6 (Barn...)",
-                               "7: Stimulus set 7 (Box...)"]
+                               "7: Stimulus set 7 (Box...)", 
+                               "8: Stimulus set 8 (Ant...)"]
         
         Label(self.control_window, text="Stimulus Set:").pack()
         self.stimulus_set_variable = StringVar(self.control_window)
@@ -290,7 +293,7 @@ class ExperimenterControlPanel(object):
         # Once the green "start program" button is pressed, then the mainscreen
         # object is created and pops up in a new window. It gets passed the
         # important inputs from the control panel.
-        print(str(self.stimulus_set_variable.get())[0])
+        # print(str(self.stimulus_set_variable.get())[0])
         if self.subject_ID_variable.get() in self.pigeon_name_list:
             if self.stimulus_set_variable.get() in self.stimuli_titles:
                 print(f"{'SESSION STARTED': ^15}")
@@ -429,7 +432,7 @@ class MainScreen(object):
         self.current_trial_counter = 0 # counter for current trial in session
         self.non_CP_trials = 1 # number of non-correction procedure trials
         self.trial_stage = 0 # Trial substage (4 within DMTO)
-        self.trial_delay_duration = 2 * 1000 # 2s; this may is variable
+        self.trial_delay_duration = 2 * 1000 # 2s; this may become variable
         
 
         # These are additional "under the hood" variables that need to be declared
@@ -510,7 +513,7 @@ class MainScreen(object):
             # stimulus set, given that the control feedback was created in
             # this program given coordinates/shapes. If stimulus set 5,
             # we creat a dictionary for feedback stimuli
-            if self.stimulus_set_num not in [5, 6, 7]:
+            if self.stimulus_set_num not in [5, 6, 7, 8]:
                 for i in self.stimuli_identity_d_list:
                     if i['Key'] == 'S':
                         self.feedback_stimulus = i['Name']
@@ -527,7 +530,7 @@ class MainScreen(object):
                     elif "E" in self.stimuli_identity_d_list[i]["Group"]:
                         self.stimuli_identity_d_list[i]["Feedback"] = self.stimuli_identity_d_list[i]["Name"]
                         
-                #print(self.stimuli_identity_d_list)
+                # print(self.stimuli_identity_d_list)
                                                                 
             
             # Once the list of dictionaries is written, we can use it to assign
@@ -535,7 +538,8 @@ class MainScreen(object):
             # each of the stimuli to a list (e.g., 1...8), shuffling the order
             # of the list, then apending the elements to the session-wide list
             # until it reaches a number of elements equal to the maximum trials
-            # per session.
+            # per session. This works for a variable number of stimuli per
+            # set.
             self.trial_stimulus_order = []
             while len(self.trial_stimulus_order) < self.max_number_of_reinforced_trials:
                 set_of_trials = []
@@ -634,7 +638,7 @@ class MainScreen(object):
                 if i_dict["Name"] == self.sample_stimulus:
                     self.exp_condition = i_dict["Group"][0] # Either "C" or "E"
                     self.correct_key = i_dict["Key"]
-                    if self.stimulus_set_num in [5, 6, 7]:
+                    if self.stimulus_set_num in [5, 6, 7, 8]:
                         self.feedback_stimulus = i_dict["Feedback"]
             # Next reset the FR if DMTO
             if self.training_phase == 1:
@@ -1117,57 +1121,62 @@ class MainScreen(object):
         
     
     def write_data(self, event, outcome):
-        # This function writes a new data line after EVERY peck. Data is
-        # organized into a matrix (just a list/vector with two dimensions,
-        # similar to a table). This matrix is appended to throughout the 
-        # session, then written to a .csv once at the end of the session.
-        if event != None: 
-            x, y = event.x, event.y
-        else: # There are certain data events that are not pecks.
-            x, y = "NA", "NA"   
+        try:
+            # This function writes a new data line after EVERY peck. Data is
+            # organized into a matrix (just a list/vector with two dimensions,
+            # similar to a table). This matrix is appended to throughout the 
+            # session, then written to a .csv once at the end of the session.
+            if event != None: 
+                x, y = event.x, event.y
+            else: # There are certain data events that are not pecks.
+                x, y = "NA", "NA"   
+                
+    # =============================================================================
+    #         if self.previous_trial_correct and self.correction_procedure:
+    #             correction_trial = 0
+    #         elif self.correction_procedure:
+    #             correction_trial = 1
+    #         else:
+    # =============================================================================
+            correction_trial = "NA"
+                
+            print(f"{outcome:>30} | x: {x: ^3} y: {y:^3} | {self.trial_stage:^5} | {str(datetime.now() - self.start_time)}")
+            # print(f"{outcome:>30} | x: {x: ^3} y: {y:^3} | Target: {self.current_target_location: ^2} | {str(datetime.now() - self.start_time)}")
+            self.session_data_frame.append([
+                str(datetime.now() - self.start_time), # SessionTime as datetime object
+                x, # X coordinate of a peck
+                y, # Y coordinate of a peck
+                outcome, # Type of event (e.g., background peck, target presentation, session end, etc.)
+                correction_trial, # 1/0 boolean for correction procedure
+                self.sample_stimulus.split(".")[0], # Name of sample (w/o ".png)
+                self.correct_key, # Correct choice
+                self.exp_condition, # control or experimental condition
+                self.trial_stage, # Substage within each trial (1-4 for DMTO)
+                round((time() - self.trial_start - (self.ITI_duration/1000)), 5), # Time into this trial minus ITI (if session ends during ITI, will be negative)
+                round((time() - self.trial_substage_start_time), 5), # Trial substage timer
+                self.current_trial_counter, # Trial count within session (1 - max # trials)
+                self.non_CP_trials, # Non-correction procedure trial counter
+                self.trial_delay_duration, # Duration of a delay (in seconds)
+                self.feedback_duration, # Duration of the feedback (in ms)
+                self.trial_FR, # FR of a specific trial
+                self.subject_ID, # Name of subject (same across datasheet)
+                self.exp_condition, # Condition
+                self.training_phase, # Phase of training as a number 0-2
+                self.stimulus_set_num,
+                date.today() # Today's date as "MM-DD-YYYY"
+                ])
             
-# =============================================================================
-#         if self.previous_trial_correct and self.correction_procedure:
-#             correction_trial = 0
-#         elif self.correction_procedure:
-#             correction_trial = 1
-#         else:
-# =============================================================================
-        correction_trial = "NA"
+            header_list = ["SessionTime", "Xcord","Ycord", "Event",
+                           "CorrectionTrial", "SampleStimulus", "CorrectKey",
+                           "StimulusCondition", "TrialSubStage", "TrialTime", 
+                           "TrialSubStageTimer","TrialNum", "NonCPTrialNum",
+                           "DelayDuration", "FeedbackDuration", "SampleFR",
+                           "Subject", "ExpCondition", "TrainingPhase",
+                           "StimulusSetNum", "Date"] # Column headers
             
-        print(f"{outcome:>30} | x: {x: ^3} y: {y:^3} | {self.trial_stage:^5} | {str(datetime.now() - self.start_time)}")
-        # print(f"{outcome:>30} | x: {x: ^3} y: {y:^3} | Target: {self.current_target_location: ^2} | {str(datetime.now() - self.start_time)}")
-        self.session_data_frame.append([
-            str(datetime.now() - self.start_time), # SessionTime as datetime object
-            x, # X coordinate of a peck
-            y, # Y coordinate of a peck
-            outcome, # Type of event (e.g., background peck, target presentation, session end, etc.)
-            correction_trial, # 1/0 boolean for correction procedure
-            self.sample_stimulus.split(".")[0], # Name of sample (w/o ".png)
-            self.correct_key, # Correct choice
-            self.exp_condition, # control or experimental condition
-            self.trial_stage, # Substage within each trial (1-4 for DMTO)
-            round((time() - self.trial_start - (self.ITI_duration/1000)), 5), # Time into this trial minus ITI (if session ends during ITI, will be negative)
-            round((time() - self.trial_substage_start_time), 5), # Trial substage timer
-            self.current_trial_counter, # Trial count within session (1 - max # trials)
-            self.non_CP_trials, # Non-correction procedure trial counter
-            self.trial_delay_duration, # Duration of a delay (in seconds)
-            self.feedback_duration, # Duration of the feedback (in ms)
-            self.trial_FR, # FR of a specific trial
-            self.subject_ID, # Name of subject (same across datasheet)
-            self.exp_condition, # Condition
-            self.training_phase, # Phase of training as a number 0-2
-            self.stimulus_set_num,
-            date.today() # Today's date as "MM-DD-YYYY"
-            ])
-        
-        header_list = ["SessionTime", "Xcord","Ycord", "Event",
-                       "CorrectionTrial", "SampleStimulus", "CorrectKey",
-                       "StimulusCondition", "TrialSubStage", "TrialTime", 
-                       "TrialSubStageTimer","TrialNum", "NonCPTrialNum",
-                       "DelayDuration", "FeedbackDuration", "SampleFR",
-                       "Subject", "ExpCondition", "TrainingPhase",
-                       "StimulusSetNum", "Date"] # Column headers
+        except AttributeError:
+            print("-Error writing data...")
+            pass
 
         
     def write_comp_data(self, SessionEnded):
