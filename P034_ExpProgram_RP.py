@@ -418,7 +418,7 @@ class MainScreen(object):
         self.session_duration = datetime.now() + timedelta(minutes = 90) # Max session time is 90 min
         self.TO_duration = 10 * 1000 # duration of timeout (ms)
         self.ITI_duration = 15 * 1000 # duration of inter-trial interval (ms)
-        if self.subject_ID in ["Hawthorne", "Waluigi"]:
+        if self.subject_ID in ["Hawthorne"]:
             self.hopper_duration = 10000 # duration of accessible hopper(ms)
         else:
             self.hopper_duration = 5000 # duration of accessible hopper(ms)
