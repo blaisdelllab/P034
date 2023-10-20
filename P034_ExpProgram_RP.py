@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
- #TEST TEST
-
 """
 Created on Mon Jan 9 2023
 @author: cyruskirkman
 
-Last updated: 2023-10-03
+Last updated: 2023-10-20
 
 This is the main code for Dr. Fang's P034b project studying the role of feedback
 upon response accuracy (and maybe learning acquisition) in a delayed match-to-
@@ -209,7 +207,8 @@ class ExperimenterControlPanel(object):
                                "5: Stimulus set 5 (Bell...)",
                                "6: Stimulus set 6 (Barn...)",
                                "7: Stimulus set 7 (Box...)", 
-                               "8: Stimulus set 8 (Ant...)"]
+                               "8: Stimulus set 8 (Ant...)",
+                               "9: Stimulus set 9 (BananaSplit...)",]
         
         Label(self.control_window, text="Stimulus Set:").pack()
         self.stimulus_set_variable = StringVar(self.control_window)
@@ -507,7 +506,7 @@ class MainScreen(object):
             # stimulus set, given that the control feedback was created in
             # this program given coordinates/shapes. If stimulus set 5,
             # we creat a dictionary for feedback stimuli
-            if self.stimulus_set_num not in [5, 6, 7, 8]:
+            if self.stimulus_set_num in [1, 2, 3, 4]:
                 for i in self.stimuli_identity_d_list:
                     if i['Key'] == 'S':
                         self.feedback_stimulus = i['Name']
@@ -516,7 +515,7 @@ class MainScreen(object):
                 for i in list(range(0,len(self.stimuli_identity_d_list))):
                     # If a control stimulus
                     if "C" in self.stimuli_identity_d_list[i]["Group"]:
-                        control_num = self.stimuli_identity_d_list[i]["Group"][1]
+                        control_num = self.stimuli_identity_d_list[i]["Group"][1:] 
                         for stim in self.stimuli_identity_d_list:
                             if stim["Key"] == f"S{control_num}":
                                 self.stimuli_identity_d_list[i]["Feedback"] = stim["Name"]
@@ -526,7 +525,6 @@ class MainScreen(object):
                         
                 # print(self.stimuli_identity_d_list)
                                                                 
-            
             # Once the list of dictionaries is written, we can use it to assign
             # the stimuli to each trial of the session. We do this by writing
             # each of the stimuli to a list (e.g., 1...8), shuffling the order
@@ -549,6 +547,8 @@ class MainScreen(object):
             # couple other things that neeed to occur during the first ITI:
             if self.subject_ID == "TEST": # If test, don't worry about ITI delays
                 self.ITI_duration = 1 * 1000
+                self.TO_duration = 1 * 1000
+                self.hopper_duration = 2 * 1000
                 self.root.after(1, lambda: self.ITI())
             else:
                 self.root.after(30000, lambda: self.ITI())
@@ -634,7 +634,7 @@ class MainScreen(object):
                 if i_dict["Name"] == self.sample_stimulus:
                     self.exp_condition = i_dict["Group"][0] # Either "C" or "E"
                     self.correct_key = i_dict["Key"]
-                    if self.stimulus_set_num in [5, 6, 7, 8]:
+                    if self.stimulus_set_num in [5, 6, 7, 8, 9]:
                         self.feedback_stimulus = i_dict["Feedback"]
             # Next reset the FR if DMTO
             if self.training_phase == 1:
