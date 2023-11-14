@@ -5,7 +5,7 @@
 Created on Mon Jan 9 2023
 @author: cyruskirkman
 
-Last updated: 2023-10-20
+Last updated: 2023-11-14
 
 This is the main code for Dr. Fang's P034b project studying the role of feedback
 upon response accuracy (and maybe learning acquisition) in a delayed match-to-
@@ -208,7 +208,8 @@ class ExperimenterControlPanel(object):
                                "6: Stimulus set 6 (Barn...)",
                                "7: Stimulus set 7 (Box...)", 
                                "8: Stimulus set 8 (Ant...)",
-                               "9: Stimulus set 9 (BananaSplit...)",]
+                               "9: Stimulus set 9 (BananaSplit...)",
+                               "10: Stimulus set 10 (BabyBear...)"]
         
         Label(self.control_window, text="Stimulus Set:").pack()
         self.stimulus_set_variable = StringVar(self.control_window)
@@ -293,7 +294,7 @@ class ExperimenterControlPanel(object):
                     self.data_folder_directory, # directory for data folder
                     self.training_phase_variable.get(), # Which training phase
                     self.training_phase_name_list, # list of training phases
-                    int(str(self.stimulus_set_variable.get())[0])
+                    int(str(self.stimulus_set_variable.get()).split(":")[0])
                     #self.MTO_FR_stringvar.get(), # MTO FR
                     #self.correction_procedure_var.get() # Correction procedure auto-shaping boolean
                     )
@@ -322,7 +323,7 @@ class MainScreen(object):
         if self.training_phase == 2: # if autoshaping
             self.illuminated_key = "NA" # set up key variable
         self.training_phase_name_list = training_phase_name_list
-        self.stimulus_set_num = stimulus_set_num
+        self.stimulus_set_num = stimulus_set_num # 1 - 10
         # Setup data directory
         self.data_folder_directory = data_folder_directory
         
@@ -379,7 +380,7 @@ class MainScreen(object):
         
         ## Set up the visual Canvas
         self.root = Toplevel()
-        self.root.title(f"P034b{self.stimulus_set_num}: Feedback in DMTO: " + 
+        self.root.title(f"P034b.{self.stimulus_set_num}: Feedback in DMTO: " + 
                         self.training_phase_name_list[self.training_phase][3:]) # this is the title of the windows
         self.mainscreen_height = 768 # height of the experimental canvas screen
         self.mainscreen_width = 1024 # width of the experimental canvas screen
@@ -485,7 +486,8 @@ class MainScreen(object):
         
             
             # After that, let's condense the stimulus dictionary list down for 
-            # each of the experimental conditions:
+            # each of the experimental conditions. Basically we're only grabbing
+            # the columns necessary for that specific subject.
             if self.stimulus_set_num == 1:
                self.stimuli_identity_d_list = self.tenative_stimuli_identity_d_list
             else:
@@ -499,18 +501,32 @@ class MainScreen(object):
                         elif str(self.exp_condition) in k:
                             new_dict[k[:-1]] = d[k]
                     self.stimuli_identity_d_list.append(new_dict)
-            # print(self.stimuli_identity_d_list)
+            #print(self.stimuli_identity_d_list)
             
             # Next, pick out the control feedback stimulus (if it exists in 
             # the .csv doc). Note that this shouldn't exist for the first
             # stimulus set, given that the control feedback was created in
-            # this program given coordinates/shapes. If stimulus set 5,
-            # we creat a dictionary for feedback stimuli
+            # this program given coordinates/shapes. If stimulus set 5 or later,
+            # we create a dictionary for feedback stimuli
             if self.stimulus_set_num in [1, 2, 3, 4]:
                 for i in self.stimuli_identity_d_list:
                     if i['Key'] == 'S':
                         self.feedback_stimulus = i['Name']
                         self.stimuli_identity_d_list.remove(i)
+            # The 10th stimulus set number works a little differently than
+            # others, as each control sample stimulus has eight independent
+            # feedback stimuli.
+            elif self.stimulus_set_num == 10:
+                for i in list(range(0,len(self.stimuli_identity_d_list))):
+                    # If experimental, feedback is same as sample
+                    if "E" in self.stimuli_identity_d_list[i]["Group"]:
+                        self.stimuli_identity_d_list[i]["Feedback"] = self.stimuli_identity_d_list[i]["Name"]
+                    elif "C" in self.stimuli_identity_d_list[i]["Group"]:
+                        control_num = self.stimuli_identity_d_list[i]["Group"][1] # Assumes fewer than 10 control stimuli
+                        self.stimuli_identity_d_list[i]["Feedback"] = []
+                        for stim in self.stimuli_identity_d_list:
+                            if stim["Key"].split(".")[0] == f"S{control_num}":
+                                self.stimuli_identity_d_list[i]["Feedback"].append(stim["Name"])
             else:
                 for i in list(range(0,len(self.stimuli_identity_d_list))):
                     # If a control stimulus
@@ -522,8 +538,6 @@ class MainScreen(object):
                     # If experimental, feedback is same as sample
                     elif "E" in self.stimuli_identity_d_list[i]["Group"]:
                         self.stimuli_identity_d_list[i]["Feedback"] = self.stimuli_identity_d_list[i]["Name"]
-                        
-                # print(self.stimuli_identity_d_list)
                                                                 
             # Once the list of dictionaries is written, we can use it to assign
             # the stimuli to each trial of the session. We do this by writing
@@ -636,6 +650,8 @@ class MainScreen(object):
                     self.correct_key = i_dict["Key"]
                     if self.stimulus_set_num in [5, 6, 7, 8, 9]:
                         self.feedback_stimulus = i_dict["Feedback"]
+                    elif self.stimulus_set_num == 10:
+                        self.feedback_stimulus = choice(i_dict["Feedback"])
             # Next reset the FR if DMTO
             if self.training_phase == 1:
                 self.sample_key_FR = choice(list(range(3,9)))
