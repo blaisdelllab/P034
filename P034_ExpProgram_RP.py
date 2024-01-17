@@ -5,7 +5,7 @@
 Created on Mon Jan 9 2023
 @author: cyruskirkman
 
-Last updated: 2024-017
+Last updated: 2024-01-17
 
 This is the main code for Dr. Fang's P034b project studying the role of feedback
 upon response accuracy (and maybe learning acquisition) in a delayed match-to-
