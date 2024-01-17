@@ -5,7 +5,7 @@
 Created on Mon Jan 9 2023
 @author: cyruskirkman
 
-Last updated: 2023-11-14
+Last updated: 2024-017
 
 This is the main code for Dr. Fang's P034b project studying the role of feedback
 upon response accuracy (and maybe learning acquisition) in a delayed match-to-
@@ -209,7 +209,10 @@ class ExperimenterControlPanel(object):
                                "7: Stimulus set 7 (Box...)", 
                                "8: Stimulus set 8 (Ant...)",
                                "9: Stimulus set 9 (BananaSplit...)",
-                               "10: Stimulus set 10 (BabyBear...)"]
+                               "10: Stimulus set 10 (BabyBear...)",
+                               "11: Stimulus set 11 (GrayCylinder...)",
+                               "12: Stimulus set 12 (Horn...)",
+                               ]
         
         Label(self.control_window, text="Stimulus Set:").pack()
         self.stimulus_set_variable = StringVar(self.control_window)
@@ -532,9 +535,13 @@ class MainScreen(object):
                     # If a control stimulus
                     if "C" in self.stimuli_identity_d_list[i]["Group"]:
                         control_num = self.stimuli_identity_d_list[i]["Group"][1:] 
-                        for stim in self.stimuli_identity_d_list:
-                            if stim["Key"] == f"S{control_num}":
-                                self.stimuli_identity_d_list[i]["Feedback"] = stim["Name"]
+                        # No feedback stimuli for SS 11 & 12
+                        if self.stimulus_set_num in [11, 12]:
+                            self.stimuli_identity_d_list[i]["Feedback"] = None
+                        else:
+                            for stim in self.stimuli_identity_d_list:
+                                if stim["Key"] == f"S{control_num}":
+                                    self.stimuli_identity_d_list[i]["Feedback"] = stim["Name"]
                     # If experimental, feedback is same as sample
                     elif "E" in self.stimuli_identity_d_list[i]["Group"]:
                         self.stimuli_identity_d_list[i]["Feedback"] = self.stimuli_identity_d_list[i]["Name"]
@@ -766,7 +773,7 @@ class MainScreen(object):
     def feedback_stage(self, correct):
         self.trial_stage = 4
         self.trial_substage_start_time = time()
-        if self.stimulus_set_num == 3 and self.exp_condition == "C":
+        if self.stimulus_set_num in [3, 12] and self.exp_condition == "C":
             self.feedback_duration = 1 # no feedback
         else:
             self.feedback_duration = choice(list(range(2,5))) * 1000
@@ -803,81 +810,82 @@ class MainScreen(object):
                                    event_type = "background_peck": 
                                        self.write_data(event, event_type))
             
-            
-        
-        # Nest, we update all the colors needed for this stage of the trial
-        self.calculate_trial_key_stimuli() # updates color list
-        
-                    
-        key_coord_dict = {"sample_key": [384, 256, 640, 512],  # [300, 200, 500, 400], # 256 pixels in diameter
-                          "left_comparison_key": [70, 518, 237, 685], # [55, 405, 185, 535], # 167 pixels diameter
-                          "right_comparison_key": [787, 518, 954, 685]# [615, 405, 745, 535] # 165 pixels diameter
-                          } 
-        # Build stimulus image, if relevant
-        if self.current_key_stimulus_dict["sample_key"] not in ["white", "black", self.control_feedback_color]:
-            self.mastercanvas.create_oval(key_coord_dict["sample_key"],
-                                          fill = "black",
-                                          outline = "black",
-                                          tag = "sample_key")
-
-            stimuli_folder_path = f"stimuli{self.stimulus_set_num}"
+        # If we need to build additional stimuli on the screen, this should 
+        # be True...
+        if not (self.trial_stage == 4 and self.stimulus_set_num == 11 and self.exp_condition == "C"):
                 
-            img = ImageTk.PhotoImage(Image.open(f"{stimuli_folder_path}/{self.current_key_stimulus_dict['sample_key']}"))
-            self.mastercanvas.img = img
-            self.mastercanvas.create_image(512,374,
-                                           anchor='center',
-                                           image=img,
-                                           tag = "sample_key")
+            # Next, we update all the colors needed for this stage of the trial
+            self.calculate_trial_key_stimuli() # updates color list
             
-            self.mastercanvas.tag_bind("sample_key",
-                                       "<Button-1>",
-                                       lambda event,
-                                       ks = "sample_key": self.key_press(event,
-                                                                    ks))
-            # Remove the key from the dictionary once its built
-            del key_coord_dict["sample_key"]
-
-            
-        
-        # Now that we have all the coordinates linked to each specific key,
-        # we can use a for loop to build each one.
-        for key_string in key_coord_dict:
-            # First up, build the actual circle that is the key and will
-            # contain the stimulus. Order is important here, as shapes built
-            # on top of each other will overlap/cover each other.
-            self.mastercanvas.create_oval([key_coord_dict[key_string][0]-16,
-                                          key_coord_dict[key_string][1]-16,
-                                          key_coord_dict[key_string][2]+16,
-                                          key_coord_dict[key_string][3]+16],
-                                                         fill = "black",
-                                                         outline = "black",
-                                                         tag = key_string)
-            
-            self.mastercanvas.create_oval(key_coord_dict[key_string],
-                                                       fill = self.current_key_stimulus_dict[key_string],
-                                                       outline = "black",
-                                                       tag = key_string)
-            
-            if self.current_key_stimulus_dict[key_string] == self.control_feedback_color:
-                self.mastercanvas.create_rectangle([key_coord_dict[key_string][0]+38,
-                                              key_coord_dict[key_string][1]+38,
-                                              key_coord_dict[key_string][2]-38,
-                                              key_coord_dict[key_string][3]-38],
-                                                             fill = "yellow",
-                                                             outline = self.control_feedback_color,
+                        
+            key_coord_dict = {"sample_key": [384, 256, 640, 512],  # [300, 200, 500, 400], # 256 pixels in diameter
+                              "left_comparison_key": [70, 518, 237, 685], # [55, 405, 185, 535], # 167 pixels diameter
+                              "right_comparison_key": [787, 518, 954, 685]# [615, 405, 745, 535] # 165 pixels diameter
+                              } 
+            # Build stimulus image, if relevant
+            if self.current_key_stimulus_dict["sample_key"] not in ["white", "black", self.control_feedback_color]:
+                self.mastercanvas.create_oval(key_coord_dict["sample_key"],
+                                              fill = "black",
+                                              outline = "black",
+                                              tag = "sample_key")
+    
+                stimuli_folder_path = f"stimuli{self.stimulus_set_num}"
+                    
+                img = ImageTk.PhotoImage(Image.open(f"{stimuli_folder_path}/{self.current_key_stimulus_dict['sample_key']}"))
+                self.mastercanvas.img = img
+                self.mastercanvas.create_image(512,374,
+                                               anchor='center',
+                                               image=img,
+                                               tag = "sample_key")
+                
+                self.mastercanvas.tag_bind("sample_key",
+                                           "<Button-1>",
+                                           lambda event,
+                                           ks = "sample_key": self.key_press(event,
+                                                                        ks))
+                # Remove the key from the dictionary once its built
+                del key_coord_dict["sample_key"]
+    
+                
+            # Now that we have all the coordinates linked to each specific key,
+            # we can use a for loop to build each one.
+            for key_string in key_coord_dict:
+                # First up, build the actual circle that is the key and will
+                # contain the stimulus. Order is important here, as shapes built
+                # on top of each other will overlap/cover each other.
+                self.mastercanvas.create_oval([key_coord_dict[key_string][0]-16,
+                                              key_coord_dict[key_string][1]-16,
+                                              key_coord_dict[key_string][2]+16,
+                                              key_coord_dict[key_string][3]+16],
+                                                             fill = "black",
+                                                             outline = "black",
                                                              tag = key_string)
                 
-            self.mastercanvas.tag_bind(key_string,
-                                       "<Button-1>",
-                                       lambda event,
-                                       key_string = key_string: self.key_press(event,
-                                                                    key_string))
-            
+                self.mastercanvas.create_oval(key_coord_dict[key_string],
+                                                           fill = self.current_key_stimulus_dict[key_string],
+                                                           outline = "black",
+                                                           tag = key_string)
+                
+                if self.current_key_stimulus_dict[key_string] == self.control_feedback_color:
+                    self.mastercanvas.create_rectangle([key_coord_dict[key_string][0]+38,
+                                                  key_coord_dict[key_string][1]+38,
+                                                  key_coord_dict[key_string][2]-38,
+                                                  key_coord_dict[key_string][3]-38],
+                                                                 fill = "yellow",
+                                                                 outline = self.control_feedback_color,
+                                                                 tag = key_string)
                     
-        # Lastly, start an auto timer if it's autoshaping
-        if self.training_phase == 2:
-            self.auto_timer = self.root.after(self.auto_reinforcer_timer,
-                                               lambda: self.provide_food(False)) # False b/c non autoreinforced
+                self.mastercanvas.tag_bind(key_string,
+                                           "<Button-1>",
+                                           lambda event,
+                                           key_string = key_string: self.key_press(event,
+                                                                        key_string))
+                
+                        
+            # Lastly, start an auto timer if it's autoshaping
+            if self.training_phase == 2:
+                self.auto_timer = self.root.after(self.auto_reinforcer_timer,
+                                                   lambda: self.provide_food(False)) # False b/c non autoreinforced
 
     def calculate_trial_key_stimuli(self):
         # This function calculates the colors for each key at a particular 
