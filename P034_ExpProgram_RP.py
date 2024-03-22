@@ -5,7 +5,7 @@
 Created on Mon Jan 9 2023
 @author: cyruskirkman
 
-Last updated: 2024-01-17
+Last updated: 2024-03-22
 
 This is the main code for Dr. Fang's P034b project studying the role of feedback
 upon response accuracy (and maybe learning acquisition) in a delayed match-to-
@@ -212,6 +212,7 @@ class ExperimenterControlPanel(object):
                                "10: Stimulus set 10 (BabyBear...)",
                                "11: Stimulus set 11 (GrayCylinder...)",
                                "12: Stimulus set 12 (Horn...)",
+                               "13: Stimulus set 13 (Hammerhead...)",
                                ]
         
         Label(self.control_window, text="Stimulus Set:").pack()
@@ -530,6 +531,19 @@ class MainScreen(object):
                         for stim in self.stimuli_identity_d_list:
                             if stim["Key"].split(".")[0] == f"S{control_num}":
                                 self.stimuli_identity_d_list[i]["Feedback"].append(stim["Name"])
+                                
+            # The 13th stimulus set also works a little differently, as each 
+            # control feedback stimulus (2) has multiple sample stimuili.
+            elif self.stimulus_set_num == 13:
+                for i in list(range(0,len(self.stimuli_identity_d_list))):
+                    # If experimental, feedback is same as sample
+                    if "E" in self.stimuli_identity_d_list[i]["Group"]:
+                        self.stimuli_identity_d_list[i]["Feedback"] = self.stimuli_identity_d_list[i]["Name"]
+                    elif "C" in self.stimuli_identity_d_list[i]["Group"]:
+                        control_num = self.stimuli_identity_d_list[i]["Group"].split(".")[1]
+                        for stim in self.stimuli_identity_d_list:
+                            if stim["Key"] == f"S.{control_num}":
+                                self.stimuli_identity_d_list[i]["Feedback"] = stim["Name"]
             else:
                 for i in list(range(0,len(self.stimuli_identity_d_list))):
                     # If a control stimulus
@@ -655,7 +669,7 @@ class MainScreen(object):
                 if i_dict["Name"] == self.sample_stimulus:
                     self.exp_condition = i_dict["Group"][0] # Either "C" or "E"
                     self.correct_key = i_dict["Key"]
-                    if self.stimulus_set_num in [5, 6, 7, 8, 9]:
+                    if self.stimulus_set_num in [5, 6, 7, 8, 9, 13]:
                         self.feedback_stimulus = i_dict["Feedback"]
                     elif self.stimulus_set_num == 10:
                         self.feedback_stimulus = choice(i_dict["Feedback"])
@@ -815,7 +829,7 @@ class MainScreen(object):
         if not (self.trial_stage == 4 and self.stimulus_set_num == 11 and self.exp_condition == "C"):
                 
             # Next, we update all the colors needed for this stage of the trial
-            self.calculate_trial_key_stimuli() # updates color list
+            self.calculate_trial_key_stimuli() # updates trial stimuli
             
                         
             key_coord_dict = {"sample_key": [384, 256, 640, 512],  # [300, 200, 500, 400], # 256 pixels in diameter
