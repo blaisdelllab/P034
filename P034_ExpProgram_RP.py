@@ -213,6 +213,7 @@ class ExperimenterControlPanel(object):
                                "11: Stimulus set 11 (GrayCylinder...)",
                                "12: Stimulus set 12 (Horn...)",
                                "13: Stimulus set 13 (Hammerhead...)",
+                               "14: Stimulus set 14 (Caterpillar...)"
                                ]
         
         Label(self.control_window, text="Stimulus Set:").pack()
@@ -532,9 +533,9 @@ class MainScreen(object):
                             if stim["Key"].split(".")[0] == f"S{control_num}":
                                 self.stimuli_identity_d_list[i]["Feedback"].append(stim["Name"])
                                 
-            # The 13th stimulus set also works a little differently, as each 
+            # The 13th and 14th stimulus sets also works a little differently, as each 
             # control feedback stimulus (2) has multiple sample stimuili.
-            elif self.stimulus_set_num == 13:
+            elif self.stimulus_set_num in [13,14]:
                 for i in list(range(0,len(self.stimuli_identity_d_list))):
                     # If experimental, feedback is same as sample
                     if "E" in self.stimuli_identity_d_list[i]["Group"]:
@@ -669,7 +670,7 @@ class MainScreen(object):
                 if i_dict["Name"] == self.sample_stimulus:
                     self.exp_condition = i_dict["Group"][0] # Either "C" or "E"
                     self.correct_key = i_dict["Key"]
-                    if self.stimulus_set_num in [5, 6, 7, 8, 9, 13]:
+                    if self.stimulus_set_num in [5, 6, 7, 8, 9, 13, 14]:
                         self.feedback_stimulus = i_dict["Feedback"]
                     elif self.stimulus_set_num == 10:
                         self.feedback_stimulus = choice(i_dict["Feedback"])
