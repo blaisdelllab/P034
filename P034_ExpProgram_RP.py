@@ -7,15 +7,15 @@ Created on Mon Jan 9 2023
 
 Last updated: 2024-03-22
 
-This is the main code for Dr. Fang's P034b project studying the role of feedback
-upon response accuracy (and maybe learning acquisition) in a delayed match-to-
-sample task (DMTS). It is an alternative approach to the previous three-button
-layout approoach, in the hopes of both improving baseline accuracy but also 
-better observing a learning curve from 50% (chance) accuracy over time,
-dependent upon feedback. Instead, the layout included two statically colored 
-and placed buttons on L/R sides of the screen with a dynamically changing
-center stimulus. L/R key accuracy was dependent upon the image type and was
-fixed accross sessions. Trainings are as follows:
+This is the main code for Cyrus Kirkman and Dr. Fang's P034b project studying
+the role of feedback upon response accuracy (and maybe learning acquisition)
+in a delayed match-to-sample task (DMTS). It is an alternative approach to the
+previous three-button layout approoach (P034a), in the hopes of both improving
+baseline accuracy but also better observing a learning curve from 50% (chance)
+accuracy over time, dependent upon feedback. Instead, the layout included two
+statically colored and placed buttons on L/R sides of the screen with a
+dynamically changing center stimulus. L/R key accuracy was dependent upon the
+image type and was fixed accross sessions. Trainings are as follows:
     
     1) Mixed instrumental/autoshaping: one of the three stimuli were filled in
         at the beginning of each trial. After a peck on the filled stimulus (FR1),
@@ -23,7 +23,7 @@ fixed accross sessions. Trainings are as follows:
         10 s, a reinforcer was immediately provided. Fill colors were either blue
         or yellow, save for six trials for the first two sessions that were grey.
         
-    2) Match to sample: The next phase was a simple MTS task in which a color
+    2) Many-to-One: The next phase was a simple MTO task in which a color
         was presented in the sample slot. After several pecks (FR3 to start,
         then inreased to FR10), a blue and yellow option were presented in 
         each of the comparison locations below (randomly assigned per trial) 
@@ -35,10 +35,10 @@ fixed accross sessions. Trainings are as follows:
         phase after they demonstrated at least 85% accuracy on a completed 
         session
     
-    3) Delayed match to sample: Similar to the prior MTS phase, the DMTS started
+    3) Delayed Many-to-One: Similar to the prior MTO phase, the DMTO started
         with presentation of the sample and completion of a FR10 schedule to 
         proceed. Next, the sample dissapeared and birds faced a delay period 
-        of variable length: either 2, 4, 8, or 16 s. After the delay concluded,
+        of variable length: either 2, 3, 4, or 5 s. After the delay concluded,
         the two differently filled comparison choice options appeared. When a
         choice was made, subjects were presented with a post-choice interval
         in which the sample key (which had been empty) was manipulated in a 
@@ -48,6 +48,30 @@ fixed accross sessions. Trainings are as follows:
         color from the start of the trial. After the 3s post-choice interval,
         a correct choice was reinforced with food while and incorrect choice 
         was punished with a 10s TO.
+        
+Once pigeons reached the DMTO phase, there were a series of seven distinct 
+phases to measure different aspects of feedback in learning. Some phases were
+replicated across multiple stimulus sets, which are provided in parantheses! 
+Details on each of these phases will be provided in the manuscript.
+
+    i. (3,12) Informative Feedback vs. Immediate Outcome (IFvIO)
+    
+    ii. (2,4) Informative feedback vs. non-informative feedback with
+              identical control cues (IFvN-IF)
+    
+    iii. (5,6,7,8,9) Informative feedback vs. paired non-informative
+              feedback (IFvPNIF)
+    
+    iv. (10) Informative feedback vs. varied non-informative feedback (IFvVNIF)
+    
+    v. (11) Informative feedback vs. blank interval (IFvBI)
+    
+    vi. (13) Informative feedback vs. paired categorical feedback (IFvPCF)
+    
+    vii. (14) Informative feedback vs. unpaired categorical feedback (IFvUCF)
+    
+    viii. (15) Paired categorical feedback vs. psuedopaired categorical
+               feedback (PCFvUCF)
         
 Updated to run on 1024x768 RPi system on 2023-09-09. Note differences in
 spatially-generated data after this time.
@@ -213,7 +237,8 @@ class ExperimenterControlPanel(object):
                                "11: Stimulus set 11 (GrayCylinder...)",
                                "12: Stimulus set 12 (Horn...)",
                                "13: Stimulus set 13 (Hammerhead...)",
-                               "14: Stimulus set 14 (Caterpillar...)"
+                               "14: Stimulus set 14 (Caterpillar...)",
+                               "15: Stimulus set 15 (Abacus...)"
                                ]
         
         Label(self.control_window, text="Stimulus Set:").pack()
@@ -224,7 +249,7 @@ class ExperimenterControlPanel(object):
                                           *self.stimuli_titles
                                           ).pack()
         
-        # Correction procedure 
+        # Correction procedure (no longer used)
 # =============================================================================
 #         Label(self.control_window,
 #               text = "Correction procedure?").pack()
@@ -533,18 +558,29 @@ class MainScreen(object):
                             if stim["Key"].split(".")[0] == f"S{control_num}":
                                 self.stimuli_identity_d_list[i]["Feedback"].append(stim["Name"])
                                 
-            # The 13th and 14th stimulus sets also works a little differently, as each 
-            # control feedback stimulus (2) has multiple sample stimuili.
-            elif self.stimulus_set_num in [13,14]:
+            # The 13th, 14th, and 15th stimulus sets also work a little differently, as each 
+            # control feedback stimulus (2) has multiple sample stimuli.
+            elif self.stimulus_set_num in [13,14,15]:
                 for i in list(range(0,len(self.stimuli_identity_d_list))):
-                    # If experimental, feedback is same as sample
-                    if "E" in self.stimuli_identity_d_list[i]["Group"]:
+                    # If experimental, feedback is same as sample for 13 & 14
+                    if "E" in self.stimuli_identity_d_list[i]["Group"] and self.stimulus_set_num != 15:
                         self.stimuli_identity_d_list[i]["Feedback"] = self.stimuli_identity_d_list[i]["Name"]
+                    
+                    # The feedback for set number 15 experimental stimuli is different
+                    elif "E" in self.stimuli_identity_d_list[i]["Group"] and self.stimulus_set_num == 15:
+                        exp_num = self.stimuli_identity_d_list[i]["Group"].split(".")[1]
+                        for stim in self.stimuli_identity_d_list:
+                            if stim["Key"] == f"S.{exp_num}":
+                                self.stimuli_identity_d_list[i]["Feedback"] = stim["Name"]
+                        
+                    # Control for both (differentially written in csv assignments)
                     elif "C" in self.stimuli_identity_d_list[i]["Group"]:
                         control_num = self.stimuli_identity_d_list[i]["Group"].split(".")[1]
                         for stim in self.stimuli_identity_d_list:
                             if stim["Key"] == f"S.{control_num}":
                                 self.stimuli_identity_d_list[i]["Feedback"] = stim["Name"]
+                                print(stim["Key"])
+                                
             else:
                 for i in list(range(0,len(self.stimuli_identity_d_list))):
                     # If a control stimulus
@@ -670,7 +706,7 @@ class MainScreen(object):
                 if i_dict["Name"] == self.sample_stimulus:
                     self.exp_condition = i_dict["Group"][0] # Either "C" or "E"
                     self.correct_key = i_dict["Key"]
-                    if self.stimulus_set_num in [5, 6, 7, 8, 9, 13, 14]:
+                    if self.stimulus_set_num in [5, 6, 7, 8, 9, 13, 14, 15]:
                         self.feedback_stimulus = i_dict["Feedback"]
                     elif self.stimulus_set_num == 10:
                         self.feedback_stimulus = choice(i_dict["Feedback"])
@@ -942,14 +978,10 @@ class MainScreen(object):
 # =============================================================================
             
         elif self.trial_stage == 4: # only works for DMTO
-            if self.exp_condition == 'E':
-                self.current_key_stimulus_dict["sample_key"] = self.sample_stimulus
-             # For the control condition...
-            elif self.stimulus_set_num > 1:
-                self.current_key_stimulus_dict["sample_key"] = self.feedback_stimulus
+            if self.exp_condition == 'E' and self.stimulus_set_num == 1:
+                self.current_key_stimulus_dict["sample_key"] = self.control_feedback_color 
             else:
-                self.current_key_stimulus_dict["sample_key"] = self.control_feedback_color
-
+                self.current_key_stimulus_dict["sample_key"] = self.feedback_stimulus
     
     """ 
     The three functions below represent the outcomes of choices made under the 
