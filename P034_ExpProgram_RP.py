@@ -5,14 +5,14 @@
 Created on Mon Jan 9 2023
 @author: cyruskirkman
 
-Last updated: 2024-03-22
+Last updated: 2024-09-27
 
-This is the main code for Cyrus Kirkman and Dr. Fang's P034b project studying
+This is the main code for Cyrus Kirkman and Dr. Li Fang's P034b project studying
 the role of feedback upon response accuracy (and maybe learning acquisition)
-in a delayed match-to-sample task (DMTS). It is an alternative approach to the
+in a delayed many-to-one task (DMTO). It is an alternative approach to the
 previous three-button layout approoach (P034a), in the hopes of both improving
 baseline accuracy but also better observing a learning curve from 50% (chance)
-accuracy over time, dependent upon feedback. Instead, the layout included two
+accuracy over time, dependent upon feedback. The choice layout included two
 statically colored and placed buttons on L/R sides of the screen with a
 dynamically changing center stimulus. L/R key accuracy was dependent upon the
 image type and was fixed accross sessions. Trainings are as follows:
@@ -72,9 +72,11 @@ Details on each of these phases will be provided in the manuscript.
     
     viii. (15) Paired categorical feedback vs. psuedopaired categorical
                feedback (PCFvUCF)
+    
+    ix. (16) Informative feedback vs. Encoded Outcome (IFvEO)
         
 Updated to run on 1024x768 RPi system on 2023-09-09. Note differences in
-spatially-generated data after this time.
+spatially-generated data after this time due to differences in screen resolution.
 """
 # Prior to running any code, its conventional to first import relevant 
 # libraries for the entire script. These can range from python libraries (sys)
@@ -192,6 +194,10 @@ class ExperimenterControlPanel(object):
             self.data_folder_directory = str(os_path.expanduser('~'))+"/Desktop/Data/" + self.data_folder
         else: # If not, just save in the current directory the program us being run in 
             self.data_folder_directory = getcwd() + "/data"
+            if not os_path.isdir(self.data_folder_directory):
+                mkdir(self.data_folder_directory)
+                print("\n ** NEW DATA FOLDER CREATED **")
+            
         
         # setup the root Tkinter window
         self.control_window = Tk()
@@ -221,7 +227,7 @@ class ExperimenterControlPanel(object):
                         variable = self.training_phase_variable,
                         text = t_name,
                         value = self.training_phase_name_list.index(t_name)).pack()
-        self.training_phase_variable.set(1) # Default set to first training phase
+        self.training_phase_variable.set(1) # Default set to second training phase
         
         # Stimulus set
         self.stimuli_titles = ["1: Stimulus set 1 (Anchor...)",
@@ -238,12 +244,13 @@ class ExperimenterControlPanel(object):
                                "12: Stimulus set 12 (Horn...)",
                                "13: Stimulus set 13 (Hammerhead...)",
                                "14: Stimulus set 14 (Caterpillar...)",
-                               "15: Stimulus set 15 (Abacus...)"
+                               "15: Stimulus set 15 (Abacus...)",
+                               "16: Stimulus set 16 (Action...)"
                                ]
         
         Label(self.control_window, text="Stimulus Set:").pack()
         self.stimulus_set_variable = StringVar(self.control_window)
-        self.stimulus_set_variable.set("Select")
+        self.stimulus_set_variable.set("16: Stimulus set 16 (Action...)") # Change based on default phase (or "Select")
         self.stimulus_set_menu = OptionMenu(self.control_window,
                                           self.stimulus_set_variable,
                                           *self.stimuli_titles
@@ -308,6 +315,9 @@ class ExperimenterControlPanel(object):
                 print("\n ** NEW DATA FOLDER FOR %s CREATED **" % pigeon_name.upper())
         except FileExistsError:
             print(f"DATA FOLDER FOR {pigeon_name.upper()} EXISTS")
+        except FileNotFoundError:
+            print("ERROR: Cannot find data folder!")
+
                 
                 
     def build_chamber_screen(self):
@@ -580,6 +590,23 @@ class MainScreen(object):
                             if stim["Key"] == f"S.{control_num}":
                                 self.stimuli_identity_d_list[i]["Feedback"] = stim["Name"]
                                 print(stim["Key"])
+            
+            # As does the 16th stimulus set, whose control is the Encoded Outcome of Choice
+            elif self.stimulus_set_num in [16]:
+                for i in list(range(0,len(self.stimuli_identity_d_list))):
+                    # If experimental, feedback is same as the sample (informative feedback)
+                    if "E" in self.stimuli_identity_d_list[i]["Group"]:
+                        self.stimuli_identity_d_list[i]["Feedback"] = self.stimuli_identity_d_list[i]["Name"]
+                        
+                    # Control for both will depend on outcome of choice (differentially written in csv assignments)
+                    elif "C" in self.stimuli_identity_d_list[i]["Group"]:
+                        for stim in self.stimuli_identity_d_list:
+                            if stim["Key"] == "S.1":
+                                self.control_correct_feedback = stim["Name"]
+                            elif stim["Key"] == "S.2":
+                                self.control_incorrect_feedback = stim["Name"]    
+            
+            
                                 
             else:
                 for i in list(range(0,len(self.stimuli_identity_d_list))):
@@ -697,8 +724,6 @@ class MainScreen(object):
             self.correct_key = "NA" # Reset correct key
             self.trial_delay_duration = choice(list(range(2,5))) * 1000
             
-            # If an experimental trial is up next (not repeated CP)...
-            # if self.current_trial_counter == 0 or not self.correction_procedure or (self.correction_procedure and self.previous_trial_correct): 
             # First pick the sample from the prexisting list....
             self.sample_stimulus = self.trial_stimulus_order[0]
             self.trial_stimulus_order.remove(self.sample_stimulus)
@@ -710,9 +735,15 @@ class MainScreen(object):
                         self.feedback_stimulus = i_dict["Feedback"]
                     elif self.stimulus_set_num == 10:
                         self.feedback_stimulus = choice(i_dict["Feedback"])
+                    # Stimulus set 16 doesn't declare the feedback until a choice is made for the EO condition
+                    elif self.stimulus_set_num == 16 and self.exp_condition == 'C':
+                        self.feedback_stimulus = "TBD"
+                    elif self.stimulus_set_num == 16 and self.exp_condition == 'E':
+                        self.feedback_stimulus = i_dict["Feedback"]
+                        
             # Next reset the FR if DMTO
             if self.training_phase == 1:
-                self.sample_key_FR = choice(list(range(3,9)))
+                self.sample_key_FR = choice(list(range(3,10)))
                 
             elif self.training_phase == 2:
                 as_options = ["left_comparison_key",
@@ -734,7 +765,6 @@ class MainScreen(object):
             # Finally, print terminal feedback "headers" for each event within the next trial
             print(f"\n{'*'*30} Trial {self.current_trial_counter} begins {'*'*30}") # Terminal feedback...
             print(f"{'Event Type':>30} | Xcord. Ycord. | Stage | Session Time")
-            
         
     #%%  Pre-choice loop 
     """
@@ -1022,14 +1052,18 @@ class MainScreen(object):
                     # If correct choice
                     if (self.current_key_stimulus_dict[keytag] == "red" and self.correct_key == "R") or (self.current_key_stimulus_dict[keytag] == "green" and self.correct_key == "L"):
                         self.write_data(event, "correct_choice")
-                        if self.training_phase == 1: #and not self.correction_procedure:
+                        if self.stimulus_set_num == 16 and self.exp_condition == 'C':
+                            self.feedback_stimulus = self.control_correct_feedback 
+                        if self.training_phase == 1:
                             self.feedback_stage(True)
                         else:
                             self.provide_food(True) 
                      # If incorrect choice...
                     else:
                         self.write_data(event, "incorrect_choice")
-                        if self.training_phase == 1: #and not self.correction_procedure:
+                        if self.stimulus_set_num == 16 and self.exp_condition == 'C':
+                            self.feedback_stimulus = self.control_incorrect_feedback 
+                        if self.training_phase == 1:
                             self.feedback_stage(False)
                         else:
                             self.time_out_func()
