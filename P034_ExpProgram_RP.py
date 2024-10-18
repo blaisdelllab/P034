@@ -5,7 +5,7 @@
 Created on Mon Jan 9 2023
 @author: cyruskirkman
 
-Last updated: 2024-09-27
+Last updated: 2024-10-18
 
 This is the main code for Cyrus Kirkman and Dr. Li Fang's P034b project studying
 the role of feedback upon response accuracy (and maybe learning acquisition)
@@ -73,7 +73,7 @@ Details on each of these phases will be provided in the manuscript.
     viii. (15) Paired categorical feedback vs. psuedopaired categorical
                feedback (PCFvUCF)
     
-    ix. (16) Informative feedback vs. Encoded Outcome (IFvEO)
+    ix. (16, 17) Informative feedback vs. Encoded Outcome (IFvEO)
         
 Updated to run on 1024x768 RPi system on 2023-09-09. Note differences in
 spatially-generated data after this time due to differences in screen resolution.
@@ -245,7 +245,8 @@ class ExperimenterControlPanel(object):
                                "13: Stimulus set 13 (Hammerhead...)",
                                "14: Stimulus set 14 (Caterpillar...)",
                                "15: Stimulus set 15 (Abacus...)",
-                               "16: Stimulus set 16 (Action...)"
+                               "16: Stimulus set 16 (Action...)",
+                               "17: Stimulus set 17 (Balloon...)"
                                ]
         
         Label(self.control_window, text="Stimulus Set:").pack()
@@ -592,7 +593,7 @@ class MainScreen(object):
                                 print(stim["Key"])
             
             # As does the 16th stimulus set, whose control is the Encoded Outcome of Choice
-            elif self.stimulus_set_num in [16]:
+            elif self.stimulus_set_num in [16, 17]:
                 for i in list(range(0,len(self.stimuli_identity_d_list))):
                     # If experimental, feedback is same as the sample (informative feedback)
                     if "E" in self.stimuli_identity_d_list[i]["Group"]:
@@ -735,10 +736,10 @@ class MainScreen(object):
                         self.feedback_stimulus = i_dict["Feedback"]
                     elif self.stimulus_set_num == 10:
                         self.feedback_stimulus = choice(i_dict["Feedback"])
-                    # Stimulus set 16 doesn't declare the feedback until a choice is made for the EO condition
-                    elif self.stimulus_set_num == 16 and self.exp_condition == 'C':
+                    # Stimulus set 16/17 doesn't declare the feedback until a choice is made for the EO condition
+                    elif self.stimulus_set_num in [16, 17] and self.exp_condition == 'C':
                         self.feedback_stimulus = "TBD"
-                    elif self.stimulus_set_num == 16 and self.exp_condition == 'E':
+                    elif self.stimulus_set_num in [16, 17] and self.exp_condition == 'E':
                         self.feedback_stimulus = i_dict["Feedback"]
                         
             # Next reset the FR if DMTO
@@ -1052,7 +1053,7 @@ class MainScreen(object):
                     # If correct choice
                     if (self.current_key_stimulus_dict[keytag] == "red" and self.correct_key == "R") or (self.current_key_stimulus_dict[keytag] == "green" and self.correct_key == "L"):
                         self.write_data(event, "correct_choice")
-                        if self.stimulus_set_num == 16 and self.exp_condition == 'C':
+                        if self.stimulus_set_num in [16, 17] and self.exp_condition == 'C':
                             self.feedback_stimulus = self.control_correct_feedback 
                         if self.training_phase == 1:
                             self.feedback_stage(True)
@@ -1061,7 +1062,7 @@ class MainScreen(object):
                      # If incorrect choice...
                     else:
                         self.write_data(event, "incorrect_choice")
-                        if self.stimulus_set_num == 16 and self.exp_condition == 'C':
+                        if self.stimulus_set_num in [16, 17] and self.exp_condition == 'C':
                             self.feedback_stimulus = self.control_incorrect_feedback 
                         if self.training_phase == 1:
                             self.feedback_stage(False)
