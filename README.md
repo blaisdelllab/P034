@@ -27,7 +27,9 @@ image type and was fixed accross sessions. Trainings are as follows:
     phase after they demonstrated at least 85% accuracy on a completed 
     session
 
-3) Delayed Many-to-One: Similar to the prior MTO phase, the DMTO started
+FINAL EXPERIMENTAL CODE
+
+3) Delayed Many-to-One: Similar to the priorMTO phase, the DMTO started
     with presentation of the sample and completion of a FR10 schedule to 
     proceed. Next, the sample dissapeared and birds faced a delay period 
     of variable length: either 2, 3, 4, or 5 s. After the delay concluded,
@@ -46,26 +48,24 @@ phases to measure different aspects of feedback in learning. Some phases were
 replicated across multiple stimulus sets, which are provided in parantheses! 
 Details on each of these phases will be provided in the manuscript.
 
-    i. (3,12) Informative Feedback vs. Immediate Outcome (IFvIO)
-    
-    ii. (2,4) Informative feedback vs. non-informative feedback with
-              identical control cues (IFvN-IF)
-    
-    iii. (5,6,7,8,9) Informative feedback vs. paired non-informative
-              feedback (IFvPNIF)
-    
-    iv. (10) Informative feedback vs. varied non-informative feedback (IFvVNIF)
-    
-    v. (11) Informative feedback vs. blank interval (IFvBI)
-    
-    vi. (13) Informative feedback vs. paired categorical feedback (IFvPCF)
-    
-    vii. (14) Informative feedback vs. unpaired categorical feedback (IFvUCF)
-    
-    viii. (15) Paired categorical feedback vs. psuedopaired categorical
-               feedback (PCFvUCF)
-    
-    ix. (16, 17) Informative feedback vs. Encoded Outcome (IFvEO)
-        
-Updated to run on 1024x768 RPi system on 2023-09-09. Note differences in
-spatially-generated data after this time due to differences in screen resolution.
+i. (3,12) Informative Feedback vs. Immediate Outcome (IFvIO)
+
+ii. (2,4) Informative feedback vs. non-informative feedback with
+          identical control cues (IFvN-IF)
+
+iii. (5,6,7,8,9) Informative feedback vs. paired non-informative
+          feedback (IFvPNIF)
+
+iv. (10) Informative feedback vs. varied non-informative feedback (IFvVNIF)
+
+v. (11) Informative feedback vs. blank interval (IFvBI)
+
+vi. (13) Informative feedback vs. paired categorical feedback (IFvPCF)
+
+vii. (14) Informative feedback vs. unpaired categorical feedback (IFvUCF)
+
+viii. (15) Paired categorical feedback vs. psuedopaired categorical
+           feedback (PCFvUCF)
+
+ix. (16, 17) Informative feedback vs. Encoded Outcome (IFvEO)
+
