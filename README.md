@@ -43,9 +43,9 @@ FINAL EXPERIMENTAL CODE
     a correct choice was reinforced with food while and incorrect choice 
     was punished with a 10s TO.
         
-Once pigeons reached the DMTO phase, there were a series of seven distinct 
+Once pigeons reached the DMTO phase, there were a series of nine distinct 
 phases to measure different aspects of feedback in learning. Some phases were
-replicated across multiple stimulus sets, which are provided in parantheses! 
+replicated across multiple stimulus sets, which are provided in parantheses. 
 Details on each of these phases will be provided in the manuscript.
 
 i. (3,12) Informative Feedback vs. Immediate Outcome (IFvIO)
