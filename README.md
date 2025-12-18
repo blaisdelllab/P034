@@ -1,4 +1,4 @@
-# P034 - The Role of Post-Choice Feedback in Learning a MTO Task
+# P034 - The Role of Post-Choice Feedback in Learning a DMTO Task
 This is the main code for Cyrus Kirkman and Dr. Li Fang's P034b project studying
 the role of feedback upon response accuracy (and maybe learning acquisition)
 in a delayed many-to-one task (DMTO). It is an alternative approach to the
